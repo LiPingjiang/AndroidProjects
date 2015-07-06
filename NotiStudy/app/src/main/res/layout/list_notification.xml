@@ -1,0 +1,35 @@
+<LinearLayout xmlns:Android="http://schemas.android.com/apk/res/android"
+    Android:orientation="horizontal"
+    Android:layout_width="fill_parent"
+    Android:layout_height="fill_parent">
+
+    <!-- icon -->
+    <ImageView Android:id="@+id/imageItem"
+        Android:layout_width="50dp"
+        Android:layout_height="50dp"
+        Android:layout_margin="8px"/>
+
+    <!-- information -->
+    <LinearLayout Android:orientation="vertical"
+        Android:layout_width="wrap_content"
+        Android:layout_height="wrap_content">
+
+    <TextView Android:id="@+id/titleItem"
+        Android:layout_width="wrap_content"
+        Android:layout_height="wrap_content" />
+    <TextView Android:id="@+id/infoItem"
+        Android:layout_width="wrap_content"
+        Android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- detail
+    <LinearLayout Android:gravity="right"
+        Android:orientation="horizontal"
+        Android:layout_width="wrap_content"
+        Android:layout_height="wrap_content">
+        <Button  Android:id="@+id/detailItem"
+            Android:layout_width="wrap_content"
+            Android:layout_height="wrap_content"
+            Android:layout_margin="5px"/>
+    </LinearLayout>-->
+</LinearLayout>
