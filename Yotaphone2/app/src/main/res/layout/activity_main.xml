@@ -1,0 +1,35 @@
+<LinearLayout
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_vertical"
+    tools:context=".MainActivity"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="53dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Notification"
+        android:id="@+id/title"
+        android:gravity="center_vertical|center_horizontal"
+        android:textColor="@android:color/black"
+        android:background="@android:color/background_light"
+        android:textStyle="bold" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/list_notifications"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:dividerHeight="1dip"
+        android:background="@android:color/background_light"
+        android:divider="@android:color/background_dark"
+        android:drawSelectorOnTop="false" />
+</LinearLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.pli.yotaphone2">
+    <uses-permission android:name="com.yotadevices.framework.permission.ACCESS_BACKSCREEN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+    <application
+        android:name=".dataApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.NoTitleBar"
+        tools:replace="android:icon,android:theme">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".service.NLService"
+            android:label="com.pingjiangli.NLService"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <!-- Service for working with a back screen -->
+        <service
+            android:name=".MyBSActivity"
+            android:exported="false" />
+
+        <!-- Adding YotaPhone SDK library -->
+        <uses-library
+            android:name="com.yotadevices.yotaphone2.sdk.v2"
+            android:required="true" />
+        <provider android:name=".auxiliary.Provider"
+            android:authorities="com.pli.yotaphone2.provider.notistudy"
+            android:exported="true"
+            android:readPermission="com.aware.READ_CONTEXT_DATA"
+            android:writePermission="com.aware.WRITE_CONTEXT_DATA"/>
+    </application>
+
+
+</manifest>

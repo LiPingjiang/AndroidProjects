@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NotiStudy</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="provider">com.pli.yotaphone2.provider</string>
+</resources>

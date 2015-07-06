@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    android:background="#ffffff"
+    android:orientation="vertical">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:background="#ffffff"
+        android:gravity="center"
+        android:text="Notification"
+        android:textColor="#000000"
+        android:textSize="30dip"
+        android:id="@+id/tv_grid"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@android:color/background_dark">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Hello, You are using NotiStudy!"
+            android:id="@+id/statebar_grid"
+            android:background="@android:color/background_light"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:textIsSelectable="false"
+            android:textSize="20dp"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp" />
+    </LinearLayout>
+
+    <GridView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/grid_notifications_bs"
+        android:layout_gravity="center_horizontal"
+        android:numColumns="3"
+        android:nestedScrollingEnabled="true"
+
+        android:drawSelectorOnTop="false" />
+
+
+</LinearLayout>
