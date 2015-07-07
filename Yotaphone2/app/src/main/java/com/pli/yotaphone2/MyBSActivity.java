@@ -4,11 +4,13 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -73,6 +75,11 @@ public class MyBSActivity extends BSActivity {
 
 
                         Log.d("bsdebug","Position_bs: "+position);
+
+                        //vibration
+                        Vibrator vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+                        vibrator.vibrate(new long[]{100, 100, 100, 100}, -1);
+
 
                         Notification n = ((dataApplication) getApplication()).getNotification().get(position);
                         NLService.currentNlservice.cancelNotification(((dataApplication) getApplication()).getStatusBarNotifications()[position].getKey());
