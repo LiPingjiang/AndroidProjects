@@ -87,6 +87,8 @@ public class MainActivity extends Activity {
         intentFilter.addAction(ACTION_NOTISTUDY_POSTNOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_REMOVENOTIFICATION);
         intentFilter.addAction(ACTION_CHECK_ESM);
+        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
         //initial Aware
@@ -380,6 +382,18 @@ public class MainActivity extends Activity {
                     }
                 }
 
+            }
+
+            if(intent.getAction().equals(Intent.ACTION_SCREEN_ON)){
+                Log.d("mainactivityaction","screen is on");
+            }
+            if(intent.getAction().equals(Intent.ACTION_USER_PRESENT)){
+                Log.d("mainactivityaction","user is present");
+                //if dataqueue is not empty
+                if(dataqueue.size()>0 && !esmIsRunning)
+                {
+                    esm(context);
+                }
             }
         }
 
