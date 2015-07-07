@@ -4,6 +4,7 @@
     package="com.pli.yotaphone2">
     <uses-permission android:name="com.yotadevices.framework.permission.ACCESS_BACKSCREEN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
     <application
         android:name=".dataApplication"
