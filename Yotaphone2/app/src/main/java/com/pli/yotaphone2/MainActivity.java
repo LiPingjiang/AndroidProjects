@@ -139,6 +139,9 @@ public class MainActivity extends Activity {
         super.onDestroy();
 
         unregisterReceiver(mBroadcastReceiver);
+        Intent bsIntent = new Intent(this, MyBSActivity.class);
+        this.stopService(bsIntent);
+
     }
 
     public void refreshListView(){
@@ -189,6 +192,7 @@ public class MainActivity extends Activity {
         Log.d("getListNotifications", "getlistNotification");
 
         if(NLService.currentNlservice==null || NLService.currentNlservice.getActiveNotifications() == null) {
+            Log.d("NLService", "lllkkkjjj");
             Log.d("getListNotifications", "return");
             return false;
         }
@@ -346,15 +350,17 @@ public class MainActivity extends Activity {
                 Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_NETWORK, 0);
                 context.sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
 
+                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
+                refreshListView();
+
                 //use thread to collect data
                 Thread thread = new DataThread(context,dataqueue);
                 thread.start();
 
-                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
 
-                refreshListView();
+
                 //start esm
-                esm(context);
+                //esm(context);
             }
             if(intent.getAction().equals(ACTION_CHECK_ESM)) {
                 Log.d("NLService", "_________NEW ESM_________");
