@@ -1,18 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'YotaDevices:YotaPhone2 Add-On L Preview:21'
+    compileSdkVersion 22
     buildToolsVersion "23.0.0 rc2"
 
     defaultConfig {
-        applicationId "com.pingjiangli.functionaltest"
-        minSdkVersion 21
+        applicationId "com.pingjiangli.notistudys"
+        minSdkVersion 15
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
         release {
+            debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -22,8 +23,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.awareframework:aware-core:+@aar'
     compile 'com.android.support:cardview-v7:22.2.0'
     compile 'com.google.android.gms:play-services:7.5.0'
-    //compile 'com.awareframework:aware-core:3.4.9'
-    compile 'com.awareframework:aware-core:+@aar'
 }

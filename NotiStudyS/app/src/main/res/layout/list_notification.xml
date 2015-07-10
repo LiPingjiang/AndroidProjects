@@ -1,0 +1,54 @@
+<LinearLayout xmlns:Android="http://schemas.android.com/apk/res/android"
+    Android:orientation="horizontal"
+    Android:layout_width="fill_parent"
+    Android:layout_height="fill_parent"
+    Android:background="@android:color/background_light">
+
+    <!-- icon -->
+    <ImageView Android:id="@+id/imageItem"
+        Android:layout_width="50dp"
+        Android:layout_height="50dp"
+        Android:layout_margin="8dp" />
+
+    <!-- information -->
+    <LinearLayout Android:orientation="vertical"
+        Android:layout_width="fill_parent"
+        Android:layout_height="wrap_content">
+
+    <RelativeLayout Android:orientation="horizontal"
+        Android:layout_width="fill_parent"
+        Android:layout_height="wrap_content">
+
+        <TextView Android:id="@+id/titleItem"
+            Android:layout_width="220dp"
+            Android:layout_height="wrap_content"
+            Android:layout_alignParentLeft="true"
+            Android:layout_marginTop="5dp" />
+        <TextView Android:id="@+id/timeItem"
+            Android:layout_width="wrap_content"
+            Android:layout_height="wrap_content"
+            Android:layout_alignParentRight="true"
+            Android:layout_marginRight="5dp" />
+
+    </RelativeLayout>
+    <TextView Android:id="@+id/infoItem"
+        Android:layout_width="fill_parent"
+        Android:layout_height="wrap_content"
+        Android:layout_marginBottom="5dp" />
+    </LinearLayout>
+
+    <!-- detail
+    <LinearLayout Android:gravity="right"
+        Android:orientation="horizontal"
+        Android:layout_width="wrap_content"
+        Android:layout_height="wrap_content">
+        <Button  Android:id="@+id/detailItem"
+            Android:layout_width="wrap_content"
+            Android:layout_height="wrap_content"
+            Android:layout_margin="5px"/>
+    </LinearLayout>-->
+
+
+</LinearLayout>
+
+
