@@ -28,9 +28,9 @@ public class DataThread extends Thread {
     }
 
     public void run() {
-        //sleep 10 seconds for data collecting
+        //sleep 1 seconds for data collecting
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -53,15 +53,16 @@ public class DataThread extends Thread {
             data.gravity = latest_gravity.getString(latest_gravity.getColumnIndex(Gravity_Provider.Gravity_Data.VALUES_2));
 //            if( Double.parseDouble(data.gravity)>0)
 //            {
-//                whichSideOn=1;
+////                whichSideOn=1;
 //                Log.d("NLService","Front Screen. ");
-//            }else if(Double.parseDouble(gravity)<0){
-//                whichSideOn=2;
+//            }else if(Double.parseDouble(data.gravity)<0){
+////                whichSideOn=2;
 //                Log.d("NLService","Back Screen. ");
 //            }else{
-//                whichSideOn=0;
+////                whichSideOn=0;
 //                Log.d("NLService","Can't decide. ");
 //            }
+            Log.d("NLService","Gravity: " + data.gravity );
 
         }
         if( latest_gravity != null && ! latest_gravity.isClosed() ) latest_gravity.close();

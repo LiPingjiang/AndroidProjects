@@ -113,8 +113,7 @@ public class ListViewAdapter extends BaseAdapter {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public View getView(int position, View convertView, ViewGroup parent) {
-        // TODO Auto-generated method stub
-        Log.e("method", "getView");
+        //Log.e("method", "getView");
         final int selectID = position;
 
         ListItemView  listItemView = null;

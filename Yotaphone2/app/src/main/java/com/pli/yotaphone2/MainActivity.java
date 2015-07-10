@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 
 public class MainActivity extends Activity {
@@ -71,6 +70,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.d("mainactivitydebug","create");
         //initial reference
         instance = this;
         listView = (ListView)findViewById(R.id.list_notifications);
@@ -104,6 +104,8 @@ public class MainActivity extends Activity {
         refreshListView();
 
         startService(new Intent(MainActivity.this, NLService.class));
+
+        Log.d("mainactivitydebug", "create finish");
     }
 
 
@@ -194,13 +196,12 @@ public class MainActivity extends Activity {
         Log.d("getListNotifications", "getlistNotification");
 
         if(NLService.currentNlservice==null || NLService.currentNlservice.getActiveNotifications() == null) {
-            Log.d("NLService", "lllkkkjjj");
             Log.d("getListNotifications", "return");
             return false;
         }
         listNotification.clear();
-        NotificationIDs  = new int[NLService.currentNlservice.getActiveNotifications().length];
-        NotificationPackages = new String[NLService.currentNlservice.getActiveNotifications().length];
+        NotificationIDs  = new int[NLService.currentNlservice.getActiveNotifications().length+5];// maybe there is a sync problem, so next loop may crash because of out of boundry
+        NotificationPackages = new String[NLService.currentNlservice.getActiveNotifications().length+5];
         statusBarNotifications = new StatusBarNotification[NLService.currentNlservice.getActiveNotifications().length];
 
         int i=0;
@@ -210,8 +211,8 @@ public class MainActivity extends Activity {
                 statusBarNotifications[i]=sbn;
                 NotificationIDs[i]=sbn.getId();
                 NotificationPackages[i]=sbn.getPackageName();
-                i++;
                 Log.d("getListNotifications", i + ": " + sbn.toString());
+                i++;
             }
         }
         Log.d("getListNotifications",i+"");
@@ -322,7 +323,6 @@ public class MainActivity extends Activity {
                 new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,presure);
                 new_data.put(Provider.NotiStudy_Data.ESM_URGENCE,urgence);
                 new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME,packagename);
-//                new_data.put(Provider.NotiStudy_Data.ESM_ANSWER,answer);
 
                 //Insert the data to the ContentProvider
                 getContentResolver().insert(Provider.NotiStudy_Data.CONTENT_URI, new_data);
@@ -347,22 +347,20 @@ public class MainActivity extends Activity {
                 Aware.setSetting(context, Aware_Preferences.STATUS_GRAVITY, true);
                 Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, true);
                 Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_NETWORK, true);
-                Aware.setSetting(context, Aware_Preferences.FREQUENCY_GRAVITY,200000 );
+                Aware.setSetting(context, Aware_Preferences.FREQUENCY_GRAVITY,0 );
                 Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_GPS, 0);
                 Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_NETWORK, 0);
                 context.sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
-
-                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
-                refreshListView();
 
                 //use thread to collect data
                 Thread thread = new DataThread(context,dataqueue);
                 thread.start();
 
+                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
+                refreshListView();
 
 
-                //start esm
-                //esm(context);
+
             }
             if(intent.getAction().equals(ACTION_CHECK_ESM)) {
                 Log.d("NLService", "_________NEW ESM_________");
@@ -400,7 +398,7 @@ public class MainActivity extends Activity {
     };
     public static void esm(Context context)
     {
-
+        Log.d("mainactivityesm","call esm");
         Intent i = new Intent(ESM.ACTION_AWARE_QUEUE_ESM);
 
             String esm_location =

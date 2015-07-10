@@ -36,7 +36,7 @@ public class NLService extends NotificationListenerService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        Log.d("NLService","destory");
     }
 
 

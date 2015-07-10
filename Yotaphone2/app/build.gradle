@@ -24,7 +24,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:+'
     compile 'com.android.support:cardview-v7:+'
     compile 'com.google.android.gms:play-services:+'
+    //compile 'com.awareframework:aware-core:3.4.8'
     compile 'com.awareframework:aware-core:+@aar'
+
     // YotaPhone2 SDK library
     //provided files('libs/com.yotadevices.yotaphone2.sdk.v2.jar')
 }
