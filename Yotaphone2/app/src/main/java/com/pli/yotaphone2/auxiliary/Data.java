@@ -7,7 +7,7 @@ import android.app.Notification;
  */
 public class Data {
     public String longitude = new String();
-    public String altitude = new String();  //location
+    public String latitude = new String();  //location
     public String gravity = new String();
     public Notification noti;          //notification
     public String activity_name = new String();

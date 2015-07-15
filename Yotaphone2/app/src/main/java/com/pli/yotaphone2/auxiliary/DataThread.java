@@ -1,9 +1,14 @@
 package com.pli.yotaphone2.auxiliary;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.aware.Aware;
@@ -12,6 +17,7 @@ import com.aware.providers.Gravity_Provider;
 import com.aware.providers.Locations_Provider;
 import com.pli.yotaphone2.MainActivity;
 import com.pli.yotaphone2.auxiliary.Data;
+import com.pli.yotaphone2.dataApplication;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -21,51 +27,52 @@ import java.util.concurrent.BlockingQueue;
 public class DataThread extends Thread {
     private Context context;
     private BlockingQueue<Data> dataqueue;
+    private NotiSensor sensors;
 
-    public DataThread(Context context, BlockingQueue<Data> queue) {
+    public DataThread(Context context, BlockingQueue<Data> queue, NotiSensor sens) {
         this.context = context;
         dataqueue = queue;
+        sensors = sens;
     }
 
     public void run() {
         //sleep 1 seconds for data collecting
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
+        dataApplication dataApp = (dataApplication) ((Activity) context).getApplication();
         //collect sensor data
         Data data = new Data();
 
-        //location
-        Cursor latest_location = context.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
-        if( latest_location != null && latest_location.moveToFirst() ) {
-            data.longitude = latest_location.getString(latest_location.getColumnIndex(Locations_Provider.Locations_Data.LONGITUDE));
-            data.altitude = latest_location.getString(latest_location.getColumnIndex(Locations_Provider.Locations_Data.ALTITUDE));
+        //通过network获取location
+        String networkProvider = LocationManager.NETWORK_PROVIDER;
+        //通过gps获取location
+        String GpsProvider = LocationManager.GPS_PROVIDER;
+        LocationManager locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            Location location = locationManager.getLastKnownLocation(GpsProvider);
+            if(location != null){
+                data.latitude = String.valueOf(location.getLatitude());
+                data.longitude = String.valueOf(location.getLongitude());
+            }else {
+                location = locationManager.getLastKnownLocation(networkProvider);
+                if(location != null){
+                    data.latitude = String.valueOf(location.getLatitude());
+                    data.longitude = String.valueOf(location.getLongitude());
+                }else {
+                    data.latitude = "null";
+                    data.longitude = "null";
+                }
+            }
+        }else {
+            data.latitude = "null";
+            data.longitude = "null";
         }
-        if( latest_location != null && ! latest_location.isClosed() ) latest_location.close();
-        Log.d("NLService", "l: " + data.longitude + " a: " + data.altitude);
 
-        //gravity - side on
-        Cursor latest_gravity = context.getContentResolver().query(Gravity_Provider.Gravity_Data.CONTENT_URI, null, null, null, Gravity_Provider.Gravity_Data.TIMESTAMP + " DESC LIMIT 1");
-        if( latest_gravity != null && latest_gravity.moveToFirst() ) {
-            data.gravity = latest_gravity.getString(latest_gravity.getColumnIndex(Gravity_Provider.Gravity_Data.VALUES_2));
-//            if( Double.parseDouble(data.gravity)>0)
-//            {
-////                whichSideOn=1;
-//                Log.d("NLService","Front Screen. ");
-//            }else if(Double.parseDouble(data.gravity)<0){
-////                whichSideOn=2;
-//                Log.d("NLService","Back Screen. ");
-//            }else{
-////                whichSideOn=0;
-//                Log.d("NLService","Can't decide. ");
-//            }
-            Log.d("NLService","Gravity: " + data.gravity );
-
-        }
-        if( latest_gravity != null && ! latest_gravity.isClosed() ) latest_gravity.close();
+        data.gravity= String.valueOf(dataApp.getGravity());
 
         //google activity
         Uri url = Uri.parse("content://com.aware.plugin.google.activity_recognition.provider/plugin_google_activity_recognition");
@@ -91,12 +98,6 @@ public class DataThread extends Thread {
         context.sendBroadcast(i);
 
         //close sensor
-        Aware.setSetting(context, Aware_Preferences.STATUS_GRAVITY, false);
-        Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, false);
-        Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_NETWORK, false);
-        context.sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
-
-
-
+        sensors.disableSensor();
     }
 }

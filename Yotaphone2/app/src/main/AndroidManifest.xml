@@ -3,9 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.pli.yotaphone2">
     <uses-permission android:name="com.yotadevices.framework.permission.ACCESS_BACKSCREEN" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+    <uses-permission android:name="com.aware.READ_CONTEXT_DATA"/>
+    <uses-permission android:name="com.aware.WRITE_CONTEXT_DATA"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+
     <application
         android:name=".dataApplication"
         android:allowBackup="true"
@@ -24,7 +34,6 @@
         </activity>
 
         <service android:name=".service.NLService"
-            android:debuggable="true"
             android:label="com.pli.NLService"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

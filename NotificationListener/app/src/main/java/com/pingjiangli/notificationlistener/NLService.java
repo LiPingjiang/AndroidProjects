@@ -13,7 +13,8 @@ import android.util.Log;
  */
 public class NLService extends NotificationListenerService {
 
-    private String TAG = this.getClass().getSimpleName();
+    //private String TAG = this.getClass().getSimpleName();
+    private String TAG = "NotificationListenerService";
     private NLServiceReceiver nlservicereciver;
     @Override
     public void onCreate() {

@@ -2,11 +2,13 @@ package com.pli.yotaphone2;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +24,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aware.Applications;
@@ -36,11 +42,13 @@ import com.aware.providers.Locations_Provider;
 import com.pli.yotaphone2.auxiliary.Data;
 import com.pli.yotaphone2.auxiliary.DataThread;
 import com.pli.yotaphone2.auxiliary.ListViewAdapter;
+import com.pli.yotaphone2.auxiliary.NotiSensor;
 import com.pli.yotaphone2.auxiliary.Provider;
 import com.pli.yotaphone2.service.NLService;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -51,6 +59,9 @@ public class MainActivity extends Activity {
     public static String ACTION_NOTISTUDY_REMOVENOTIFICATION = "com.pingjiangli.Notification.removenotification";
     public static String ACTION_REFRESH_NOTIFICATION = "action_refresh_notification";
     public static String ACTION_CHECK_ESM = "action_check_esm";
+    public static String ACTION_NOTISTUDY_ESM_COMPLETE = "com.pingjiangli.esm.complete";
+    public static String ACTION_NOTISTUDY_ESM_START = "com.pingjiangli.esm.start";
+
 
     private ListView listView;
     private ListViewAdapter listViewAdapter;
@@ -63,17 +74,29 @@ public class MainActivity extends Activity {
     public static MainActivity instance;
     private Queue<Notification> NotiQueue;
     private Boolean esmIsRunning=false;
+    private NotiSensor sensors;
+    private String esmAnswer[]=new String[7];
+
+    private TextView title;
+
+    public RadioButton c1;
+    public RadioButton c2;
+    public RadioButton c3;
+    public RadioButton c4;
+    public RadioButton c5;
+    public Button bt;
+    public int status;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        Log.d("mainactivitydebug", "create");
 
-        Log.d("mainactivitydebug","create");
-        //initial reference
         instance = this;
-        listView = (ListView)findViewById(R.id.list_notifications);
+
+
+        sensors  = new NotiSensor(this);
         dataApp  = (dataApplication) getApplication();
         nManger  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         NotiQueue= new LinkedList<Notification>();
@@ -86,22 +109,25 @@ public class MainActivity extends Activity {
         intentFilter.addAction(ESM.ACTION_AWARE_ESM_QUEUE_COMPLETE);
         intentFilter.addAction(ACTION_NOTISTUDY_POSTNOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_REMOVENOTIFICATION);
+        intentFilter.addAction(ACTION_NOTISTUDY_ESM_START);
+        intentFilter.addAction(ACTION_NOTISTUDY_ESM_COMPLETE);
         intentFilter.addAction(ACTION_CHECK_ESM);
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
         //initial Aware
-        Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
+//        Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
         Aware.setSetting(this, Aware_Preferences.STATUS_APPLICATIONS, true);
         Aware.setSetting(this, Aware_Preferences.STATUS_NOTIFICATIONS, true);
         Aware.setSetting(this, Aware_Preferences.STATUS_GRAVITY, false);
-//        Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
-        Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
+        Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
+        //Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
 
         sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH)); //Ask AWARE to activate sensors
 
-        refreshListView();
+        changeUI("main");
+
 
         startService(new Intent(MainActivity.this, NLService.class));
 
@@ -142,6 +168,9 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
+        Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
+        sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
+
         unregisterReceiver(mBroadcastReceiver);
         Intent bsIntent = new Intent(this, MyBSActivity.class);
         this.stopService(bsIntent);
@@ -158,7 +187,6 @@ public class MainActivity extends Activity {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
 
 
                 //Log.d("onclickinMAIN","click! " + position);
@@ -215,7 +243,7 @@ public class MainActivity extends Activity {
                 i++;
             }
         }
-        Log.d("getListNotifications",i+"");
+        Log.d("getListNotifications", i + "");
         dataApp.updateNotification(listNotification);
         dataApp.updateNotificationIDs(NotificationIDs);
         dataApp.updateNotificationPackages(NotificationPackages);
@@ -232,34 +260,14 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             Log.d("NOTIFYSTUDY", "Received: " + intent.getAction());
 
-            if(intent.getAction().equals(Applications.ACTION_AWARE_APPLICATIONS_NOTIFICATIONS)) {
 
-            }
-            if( intent.getAction().equals( Locations.ACTION_AWARE_LOCATIONS )) {
-                Cursor latest_location = context.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
-                if( latest_location != null && latest_location.moveToFirst() ) {
-                    Log.d("NOTIFYSTUDY", "Locations: "+ DatabaseUtils.dumpCursorToString(latest_location));
-                }
-                if( latest_location != null && ! latest_location.isClosed() ) latest_location.close();
-            }
-            if( intent.getAction().equals( Applications.ACTION_AWARE_APPLICATIONS_FOREGROUND )){
-                Cursor latest_app = context.getContentResolver().query(Applications_Provider.Applications_Foreground.CONTENT_URI, null, null, null, Applications_Provider.Applications_Foreground.TIMESTAMP + " DESC LIMIT 1");
-                if( latest_app != null && latest_app.moveToFirst() ) {
-                    Log.d("NOTIFYSTUDY", "Applications: "+DatabaseUtils.dumpCursorToString(latest_app));
-                }
-                if( latest_app != null && ! latest_app.isClosed() ) latest_app.close();
-            }
-            if( intent.getAction().equals(ESM.ACTION_AWARE_ESM_QUEUE_STARTED) ) {
-                Log.d("NLService", "ACTION_AWARE_ESM_QUEUE_STARTED");
-
+            if( intent.getAction().equals(ACTION_NOTISTUDY_ESM_START) ) {
+                Log.d("NLService", "ACTION_ESM_QUEUE_STARTED");
                 esmIsRunning=true;
-
             }
-            if( intent.getAction().equals(ESM.ACTION_AWARE_ESM_QUEUE_COMPLETE) ) {
-                Log.d("NLService","ACTION_AWARE_ESM_QUEUE_COMPLETE");
-
+            if( intent.getAction().equals(ACTION_NOTISTUDY_ESM_COMPLETE) ) {
+                Log.d("NLService","ACTION_ESM_QUEUE_COMPLETE");
                 esmIsRunning=false;
-
                 //currentNotification
                 //Log.d("NLService","Notification: " + currentNotification.toString());
                 Notification notification = NotiQueue.poll();//remove first one
@@ -270,36 +278,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
 
-                //esm
-                String location = null;
-                String identity = null;
-                String presure = null;
-                String importance = null;
-                String urgence = null;
-                String packagename=null;
-//                String answer=null;
-                Cursor latest_esm = context.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null,  "timestamp DESC LIMIT 5");
-                if( latest_esm != null && latest_esm.moveToFirst() ) {
-                    location = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                    packagename = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.TRIGGER));
-//                    activity_type = latest_esm.getString(latest_esm.getColumnIndex("activity_type"));
-//                    activity_confidence = latest_esm.getString(latest_esm.getColumnIndex("confidence"));
-                    Log.d("esmMainActivity","location:"+ location);
-                    if(latest_esm.moveToNext()){
-                        identity = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                        Log.d("esmMainActivity","identity:"+ identity);
-                        if(latest_esm.moveToNext()){
-                            presure = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                            if(latest_esm.moveToNext()){
-                                importance = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                                if(latest_esm.moveToNext()){
-                                    urgence = latest_esm.getString(latest_esm.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                                }
-                            }
-                        }
-                    }
-                }
-                if( latest_esm != null && ! latest_esm.isClosed() ) latest_esm.close();
+
 
                 //Saving data to the ContentProvider
                 ContentValues new_data = new ContentValues();
@@ -310,19 +289,19 @@ public class MainActivity extends Activity {
                 new_data.put(Provider.NotiStudy_Data.ACTIVITY_TYPE,data.activity_type);
                 new_data.put(Provider.NotiStudy_Data.ACTIVITY_CONFIDENCE,data.activity_confidence);
                 new_data.put(Provider.NotiStudy_Data.LOCATION_LONGITUDE,data.longitude);
-                new_data.put(Provider.NotiStudy_Data.LOCATION_ALTITUDE,data.altitude);
+                new_data.put(Provider.NotiStudy_Data.LOCATION_ALTITUDE,data.latitude);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_CATEGORY,notification.category);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_PRIORITY,notification.priority);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_VISIBILITY,notification.visibility);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_WHEN,notification.when);
                 if(notification.extras.get(Notification.EXTRA_TEMPLATE)!=null)
                     new_data.put(Provider.NotiStudy_Data.NOTIFICATION_TEMPLATE,(String)notification.extras.get(Notification.EXTRA_TEMPLATE));
-                new_data.put(Provider.NotiStudy_Data.ESM_LOCATION, location);
-                new_data.put(Provider.NotiStudy_Data.ESM_IDENTITY,identity);
-                new_data.put(Provider.NotiStudy_Data.ESM_IMPORTANCE,importance);
-                new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,presure);
-                new_data.put(Provider.NotiStudy_Data.ESM_URGENCE,urgence);
-                new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME,packagename);
+                new_data.put(Provider.NotiStudy_Data.ESM_LOCATION, esmAnswer[1]);
+                new_data.put(Provider.NotiStudy_Data.ESM_IDENTITY,esmAnswer[2]);
+                new_data.put(Provider.NotiStudy_Data.ESM_IMPORTANCE,esmAnswer[3]);
+                new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,esmAnswer[4]);
+                new_data.put(Provider.NotiStudy_Data.ESM_URGENCE,esmAnswer[5]);
+                //new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME,packagename);
 
                 //Insert the data to the ContentProvider
                 getContentResolver().insert(Provider.NotiStudy_Data.CONTENT_URI, new_data);
@@ -331,6 +310,15 @@ public class MainActivity extends Activity {
                 //recheck the data queue
                 Intent i = new Intent(MainActivity.ACTION_CHECK_ESM);
                 sendBroadcast(i);
+
+                //hide it
+                if(runningTaskInfos != null){
+
+                    i = new Intent(MainActivity.this,
+                            runningTaskInfos.get(0).topActivity.getClass());
+                    i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivity(i);
+                }
 
             }
             if(intent.getAction().equals(ACTION_NOTISTUDY_POSTNOTIFICATION)) {
@@ -343,17 +331,10 @@ public class MainActivity extends Activity {
 
 
                 //open sensor
-                //active all the needed sensor
-                Aware.setSetting(context, Aware_Preferences.STATUS_GRAVITY, true);
-                Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, true);
-                Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_NETWORK, true);
-                Aware.setSetting(context, Aware_Preferences.FREQUENCY_GRAVITY,0 );
-                Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_GPS, 0);
-                Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_NETWORK, 0);
-                context.sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
+                sensors.enableSensor();
 
                 //use thread to collect data
-                Thread thread = new DataThread(context,dataqueue);
+                Thread thread = new DataThread(context,dataqueue,sensors);
                 thread.start();
 
                 NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
@@ -396,68 +377,133 @@ public class MainActivity extends Activity {
         }
 
     };
-    public static void esm(Context context)
-    {
-        Log.d("mainactivityesm","call esm");
-        Intent i = new Intent(ESM.ACTION_AWARE_QUEUE_ESM);
-
-            String esm_location =
-                    "{'esm': {" +
-                            "'esm_type': " + ESM.TYPE_ESM_RADIO + ", " +
-                            "'esm_title': 'Location', " +
-                            "'esm_instructions': 'Choose your location type.', " +
-                            "'esm_radios':['Home','Work','University/School','Outdoor','Other'],"+
-                            "'esm_submit': 'Next(1/5)', " +
-                            "'esm_expiration_threashold': 120, " +
-                            "'esm_trigger': '"+ context.getPackageName() +"' }}";
-        String esm_identity =
-                "{'esm': {" +
-                        "'esm_type': " + ESM.TYPE_ESM_RADIO + ", " +
-                        "'esm_title': 'Identity', " +
-                        "'esm_instructions': 'Are you alone or with someone?', " +
-                        "'esm_radios':['Alone','With friends','With strangers','Other'],"+
-                        "'esm_submit': 'Next(2/5)', " +
-                        "'esm_expiration_threashold': 120, " +
-                        "'esm_trigger': '"+ context.getPackageName() +"' }}";
-        String esm_presure =
-                "{'esm': {" +
-                        "'esm_type': " + ESM.TYPE_ESM_LIKERT + ", " +
-                        "'esm_title': 'Presure', " +
-                        "'esm_instructions': 'Will you feel uncomfortable when others see this notification?', " +
-                        "'esm_likert_max': 5,"+
-                        "'esm_likert_max_label': 'Uncomfortable'," +
-                        "'esm_likert_min_label': 'Comfortable',"+
-                        "'esm_submit': 'Next(3/5)', " +
-                        "'esm_expiration_threashold': 120, " +
-                        "'esm_trigger': '"+ context.getPackageName() +"' }}";
-        String esm_importance =
-                "{'esm': {" +
-                        "'esm_type': " + ESM.TYPE_ESM_LIKERT + ", " +
-                        "'esm_title': 'Inportance', " +
-                        "'esm_instructions': 'Is this notification important?', " +
-                        "'esm_likert_max': 5,"+
-                        "'esm_likert_max_label': 'Very important'," +
-                        "'esm_likert_min_label': 'Not important',"+
-                        "'esm_submit': 'Next(4/5)', " +
-                        "'esm_expiration_threashold': 120, " +
-                        "'esm_trigger': '"+ context.getPackageName() +"' }}";
-        String esm_urgence =
-                "{'esm': {" +
-                        "'esm_type': " + ESM.TYPE_ESM_LIKERT + ", " +
-                        "'esm_title': 'Urgence', " +
-                        "'esm_instructions': 'Is this notification urgent?', " +
-                        "'esm_likert_max': 5,"+
-                        "'esm_likert_max_label': 'Very urgent'," +
-                        "'esm_likert_min_label': 'Not urgent',"+
-                        "'esm_submit': 'Done(5/5)', " +
-                        "'esm_expiration_threashold': 120, " +
-                        "'esm_trigger': '"+ context.getPackageName() +"' }}";
-        String esm_str ="["+esm_location+","+esm_identity+","+esm_presure+","+esm_importance+","+esm_urgence+"]";
-        //Ask AWARE to show question
-        i.putExtra(ESM.EXTRA_ESM, esm_str);
-        context.sendBroadcast(i);
-
+    public void esm(Context context){
+        changeUI("esm");
+        Log.d("NOTIFYSTUDY","esm running");
     }
     BlockingQueue<Data> dataqueue = new ArrayBlockingQueue<Data>(30);
+    ActivityManager activityManager;
+    List<ActivityManager.RunningTaskInfo> runningTaskInfos;
+    private void changeUI(String type){
+        switch (type){
+            case "main":{
+
+                setContentView(R.layout.activity_main);
+                listView = (ListView)findViewById(R.id.list_notifications);
+                refreshListView();
+                Log.d("mainactivitydebug","change to main,"+listView);
+                break;
+            }
+            case "esm":{
+                Intent i = new Intent(MainActivity.ACTION_NOTISTUDY_ESM_START);
+                sendBroadcast(i);
+
+                //record the top activity
+                ActivityManager activityManager =
+                        (ActivityManager)(getSystemService(android.content.Context.ACTIVITY_SERVICE )) ;
+                runningTaskInfos = activityManager.getRunningTasks(1) ;
+
+
+
+                Intent intent = new Intent(MainActivity.this,MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+
+                //start a thread ,after 2 minutes, stop esm
+
+                setContentView(R.layout.esmfront);
+                title= (TextView)    findViewById(R.id.title);
+
+                c1= (RadioButton) findViewById(R.id.choice1);
+                c2= (RadioButton) findViewById(R.id.choice2);
+                c3= (RadioButton) findViewById(R.id.choice3);
+                c4= (RadioButton) findViewById(R.id.choice4);
+                c5= (RadioButton) findViewById(R.id.choice5);
+                bt= (Button)      findViewById(R.id.button);
+                bt .setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        RadioGroup rg= (RadioGroup)  findViewById(R.id.radiogroup);
+                            esmAnswer[status-1]=((RadioButton) findViewById(rg.getCheckedRadioButtonId())).getText().toString();
+                        Log.d("mainactivitydebug","check text :"+ esmAnswer[status-1]);
+
+                        rg.clearCheck();
+                        updateESM();
+                    }
+                });
+
+                status=1;
+                updateESM();
+                break;
+            }
+        }
+    }
+
+    private void updateESM()
+    {
+        switch (status) {
+            case 1: {
+                title.setText("Choose your location type.");
+                c1.setText("Home");
+                c2.setText("Work");
+                c3.setText("University/School");
+                c4.setText("Outdoor");
+                c5.setText("Other");
+                bt.setText("Next(1/5)");
+                status = 2;
+                break;
+            }
+            case 2: {
+                title.setText("Are you alone or with someone?");
+                c1.setText("Alone");
+                c2.setText("With friends");
+                c3.setText("With colleague");
+                c4.setText("With strangers");
+                c5.setText("Other");
+                bt.setText("Next(2/5)");
+                status = 3;
+                break;
+            }
+            case 3: {
+                title.setText("Will you feel uncomfortable when others see this notification?");
+                c1.setText("Very uncomfortable");
+                c2.setText("uncomfortable");
+                c3.setText("Neither comfortable nor uncomfortable");
+                c4.setText("Comfortable");
+                c5.setText("Very comfortable");
+                bt.setText("Next(3/5)");
+                status = 4;
+                break;
+            }
+            case 4: {
+                title.setText("Is this notification important?");
+                c1.setText("Very important");
+                c2.setText("Important");
+                c3.setText("Neither important nor unimportant");
+                c4.setText("Unimportant");
+                c5.setText("Very unimportant");
+                bt.setText("Next(4/5)");
+                status = 5;
+                break;
+            }
+            case 5: {
+                title.setText("Is this notification urgent?");
+                c1.setText("Very urgent");
+                c2.setText("Urgent");
+                c3.setText("Neither urgent nor unurgent");
+                c4.setText("Unurgent");
+                c5.setText("Very unurgent");
+                bt.setText("Confirm");
+                status = 6;
+                break;
+            }
+            case 6: {
+                changeUI("main");
+                Intent i = new Intent(MainActivity.ACTION_NOTISTUDY_ESM_COMPLETE);
+                sendBroadcast(i);
+                status = 1;
+                break;
+            }
+        }
+    }
 
 }

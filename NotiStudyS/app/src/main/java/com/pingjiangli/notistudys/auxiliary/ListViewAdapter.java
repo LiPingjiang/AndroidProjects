@@ -134,8 +134,10 @@ public class ListViewAdapter extends BaseAdapter {
         }
 
         try {
-            listItemView.image.setBackground(context.createPackageContext(NotificationPackages[position], context.CONTEXT_INCLUDE_CODE
-                    | Context.CONTEXT_IGNORE_SECURITY).getDrawable(listNotifications.get(position).icon));
+            listItemView.image.setBackgroundDrawable(context.createPackageContext(NotificationPackages[position], context.CONTEXT_INCLUDE_CODE
+                    | Context.CONTEXT_IGNORE_SECURITY).getResources().getDrawable(listNotifications.get(position).icon));
+//            listItemView.image.setImageBitmap(listNotifications.get(position).largeIcon);
+
         }catch(Exception ex) {
             Log.d("listviewadapter", "Resource ID: " + listNotifications.get(position).icon + " ,exception: " + ex.getMessage());
         }

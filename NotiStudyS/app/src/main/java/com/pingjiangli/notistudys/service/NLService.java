@@ -55,11 +55,11 @@ public class NLService extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn) {
 
         //when the app starts, it will miscall this function once
-        if(isFirstTime)
+        /*if(isFirstTime)
         {
             isFirstTime = false;
             return;
-        }
+        }*/
         Log.d(TAG, "onNotificationRemoved ");
 
         Intent i = new Intent(MainActivity.ACTION_NOTISTUDY_REMOVENOTIFICATION);

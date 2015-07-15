@@ -217,7 +217,7 @@ public class MainActivity extends Activity {
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver(){
-        @TargetApi(Build.VERSION_CODES.KITKAT)
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("NOTIFYSTUDY", "Received: " + intent.getAction());
@@ -301,9 +301,9 @@ public class MainActivity extends Activity {
                 new_data.put(Provider.NotiStudy_Data.ACTIVITY_CONFIDENCE,data.activity_confidence);
                 new_data.put(Provider.NotiStudy_Data.LOCATION_LONGITUDE,data.longitude);
                 new_data.put(Provider.NotiStudy_Data.LOCATION_ALTITUDE,data.altitude);
-                new_data.put(Provider.NotiStudy_Data.NOTIFICATION_CATEGORY,notification.category);
+                //new_data.put(Provider.NotiStudy_Data.NOTIFICATION_CATEGORY,notification.category);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_PRIORITY,notification.priority);
-                new_data.put(Provider.NotiStudy_Data.NOTIFICATION_VISIBILITY,notification.visibility);
+                //new_data.put(Provider.NotiStudy_Data.NOTIFICATION_VISIBILITY,notification.visibility);
                 new_data.put(Provider.NotiStudy_Data.NOTIFICATION_WHEN,notification.when);
                 if(notification.extras.get(Notification.EXTRA_TEMPLATE)!=null)
                     new_data.put(Provider.NotiStudy_Data.NOTIFICATION_TEMPLATE,(String)notification.extras.get(Notification.EXTRA_TEMPLATE));
@@ -443,6 +443,8 @@ public class MainActivity extends Activity {
                         "'esm_expiration_threashold': 120, " +
                         "'esm_trigger': '"+ context.getPackageName() +"' }}";
         String esm_str ="["+esm_location+","+esm_identity+","+esm_presure+","+esm_importance+","+esm_urgence+"]";
+//        String esm_str ="["+esm_location+"]";
+
         //Ask AWARE to show question
         i.putExtra(ESM.EXTRA_ESM, esm_str);
         context.sendBroadcast(i);
