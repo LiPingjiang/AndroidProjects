@@ -228,13 +228,14 @@ public class MainActivity extends Activity {
             return false;
         }
         listNotification.clear();
-        NotificationIDs  = new int[NLService.currentNlservice.getActiveNotifications().length+5];// maybe there is a sync problem, so next loop may crash because of out of boundry
-        NotificationPackages = new String[NLService.currentNlservice.getActiveNotifications().length+5];
-        statusBarNotifications = new StatusBarNotification[NLService.currentNlservice.getActiveNotifications().length];
+        int maxLength =NLService.currentNlservice.getActiveNotifications().length;
+        NotificationIDs  = new int[maxLength];// maybe there is a sync problem, so next loop may crash because of out of boundry
+        NotificationPackages = new String[maxLength];
+        statusBarNotifications = new StatusBarNotification[maxLength];
 
         int i=0;
         for (StatusBarNotification sbn : NLService.currentNlservice.getActiveNotifications()) {
-            if(sbn.getNotification()!=null) {
+            if(sbn.getNotification()!=null && i<maxLength) {
                 listNotification.add(i, sbn.getNotification());
                 statusBarNotifications[i]=sbn;
                 NotificationIDs[i]=sbn.getId();
@@ -311,14 +312,6 @@ public class MainActivity extends Activity {
                 Intent i = new Intent(MainActivity.ACTION_CHECK_ESM);
                 sendBroadcast(i);
 
-                //hide it
-                if(runningTaskInfos != null){
-
-                    i = new Intent(MainActivity.this,
-                            runningTaskInfos.get(0).topActivity.getClass());
-                    i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(i);
-                }
 
             }
             if(intent.getAction().equals(ACTION_NOTISTUDY_POSTNOTIFICATION)) {
@@ -498,6 +491,7 @@ public class MainActivity extends Activity {
             }
             case 6: {
                 changeUI("main");
+                moveTaskToBack (true);
                 Intent i = new Intent(MainActivity.ACTION_NOTISTUDY_ESM_COMPLETE);
                 sendBroadcast(i);
                 status = 1;
