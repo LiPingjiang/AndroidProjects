@@ -88,7 +88,7 @@ public class MyBSActivity extends BSActivity {
 
                             try {
                                 //Log.d("bsdebug","Send: "+n.contentIntent);
-                                stateBar.setText("Application is running on front Screen.");
+                                stateBar.setText("Running on front Screen. " + n.extras.get(Notification.EXTRA_TITLE).toString() + ": " + n.extras.get(Notification.EXTRA_TEXT).toString());
                                 //nManger.cancel(((dataApplication) getApplication()).getNotificationIDs()[position]);
                                 n.contentIntent.send();
                                 //
@@ -114,16 +114,9 @@ public class MyBSActivity extends BSActivity {
         public void onReceive(Context context, Intent intent) {
             Log.d("bsdebug", "BS receive action: "+ intent.getAction());
             if(intent.getAction().equals(MainActivity.ACTION_REFRESH_NOTIFICATION)){
-                //Log.d("bsdebug", "receive refresh command");
                 updateUI();
             }
 
-            /*if(intent.getAction().equals(MainActivity.ACTION_NOTISTUDY_POSTNOTIFICATION)) {
-                //refreshListView();
-            }
-            if(intent.getAction().equals(MainActivity.ACTION_NOTISTUDY_REMOVENOTIFICATION)) {
-                //refreshListView();
-            }*/
         }
     };
     @Override

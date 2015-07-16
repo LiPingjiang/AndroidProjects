@@ -2,19 +2,15 @@ package com.pli.yotaphone2;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -36,9 +32,6 @@ import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.ESM;
 import com.aware.Locations;
-import com.aware.providers.Applications_Provider;
-import com.aware.providers.ESM_Provider;
-import com.aware.providers.Locations_Provider;
 import com.pli.yotaphone2.auxiliary.Data;
 import com.pli.yotaphone2.auxiliary.DataThread;
 import com.pli.yotaphone2.auxiliary.ListViewAdapter;
@@ -48,7 +41,6 @@ import com.pli.yotaphone2.service.NLService;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -72,19 +64,20 @@ public class MainActivity extends Activity {
     private String[] NotificationPackages;
     private StatusBarNotification[] statusBarNotifications;
     public static MainActivity instance;
-    private Queue<Notification> NotiQueue;
+    private Queue<StatusBarNotification> NotiQueue;
     private Boolean esmIsRunning=false;
     private NotiSensor sensors;
     private String esmAnswer[]=new String[7];
 
     private TextView title;
-
+    private TextView content;
     public RadioButton c1;
     public RadioButton c2;
     public RadioButton c3;
     public RadioButton c4;
     public RadioButton c5;
-    public Button bt;
+    public Button bt_confirm;
+    public Button bt_skip;
     public int status;
 
 
@@ -99,7 +92,7 @@ public class MainActivity extends Activity {
         sensors  = new NotiSensor(this);
         dataApp  = (dataApplication) getApplication();
         nManger  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotiQueue= new LinkedList<Notification>();
+        NotiQueue= new LinkedList<StatusBarNotification>();
         //initial broadcast receiver
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Locations.ACTION_AWARE_LOCATIONS);
@@ -159,14 +152,29 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.v("mainactivitydebug", "onStart");
         //Start Back Screen service
         Intent bsIntent = new Intent(this, MyBSActivity.class);
         this.startService(bsIntent);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v("mainactivitydebug", "onStop");
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Log.v("mainactivitydebug", "onBackPressed");
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.v("mainactivitydebug", "onDestory");
+
 
         Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
         sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
@@ -271,7 +279,8 @@ public class MainActivity extends Activity {
                 esmIsRunning=false;
                 //currentNotification
                 //Log.d("NLService","Notification: " + currentNotification.toString());
-                Notification notification = NotiQueue.poll();//remove first one
+                StatusBarNotification sbn = NotiQueue.poll();//remove first one
+                Notification notification = sbn.getNotification();
                 Data data = null;
                 try {
                     data = dataqueue.take();
@@ -299,10 +308,10 @@ public class MainActivity extends Activity {
                     new_data.put(Provider.NotiStudy_Data.NOTIFICATION_TEMPLATE,(String)notification.extras.get(Notification.EXTRA_TEMPLATE));
                 new_data.put(Provider.NotiStudy_Data.ESM_LOCATION, esmAnswer[1]);
                 new_data.put(Provider.NotiStudy_Data.ESM_IDENTITY,esmAnswer[2]);
-                new_data.put(Provider.NotiStudy_Data.ESM_IMPORTANCE,esmAnswer[3]);
-                new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,esmAnswer[4]);
+                new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,esmAnswer[3]);
+                new_data.put(Provider.NotiStudy_Data.ESM_IMPORTANCE,esmAnswer[4]);
                 new_data.put(Provider.NotiStudy_Data.ESM_URGENCE,esmAnswer[5]);
-                //new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME,packagename);
+                new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME, sbn.getPackageName());
 
                 //Insert the data to the ContentProvider
                 getContentResolver().insert(Provider.NotiStudy_Data.CONTENT_URI, new_data);
@@ -330,7 +339,7 @@ public class MainActivity extends Activity {
                 Thread thread = new DataThread(context,dataqueue,sensors);
                 thread.start();
 
-                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")).getNotification());
+                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")));
                 refreshListView();
 
 
@@ -375,8 +384,7 @@ public class MainActivity extends Activity {
         Log.d("NOTIFYSTUDY","esm running");
     }
     BlockingQueue<Data> dataqueue = new ArrayBlockingQueue<Data>(30);
-    ActivityManager activityManager;
-    List<ActivityManager.RunningTaskInfo> runningTaskInfos;
+
     private void changeUI(String type){
         switch (type){
             case "main":{
@@ -391,29 +399,46 @@ public class MainActivity extends Activity {
                 Intent i = new Intent(MainActivity.ACTION_NOTISTUDY_ESM_START);
                 sendBroadcast(i);
 
-                //record the top activity
-                ActivityManager activityManager =
-                        (ActivityManager)(getSystemService(android.content.Context.ACTIVITY_SERVICE )) ;
-                runningTaskInfos = activityManager.getRunningTasks(1) ;
-
-
-
                 Intent intent = new Intent(MainActivity.this,MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
 
                 //start a thread ,after 2 minutes, stop esm
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(120000);
+                            if(esmIsRunning){
+                                for(int j=status;j<=6;j++){
+                                    esmAnswer[j-1]="NoAnswer";
+                                }
+                                status=6;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updateESM();
+                                    }
+                                });
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+
 
                 setContentView(R.layout.esmfront);
                 title= (TextView)    findViewById(R.id.title);
+                content=(TextView)    findViewById(R.id.content);
 
                 c1= (RadioButton) findViewById(R.id.choice1);
                 c2= (RadioButton) findViewById(R.id.choice2);
                 c3= (RadioButton) findViewById(R.id.choice3);
                 c4= (RadioButton) findViewById(R.id.choice4);
                 c5= (RadioButton) findViewById(R.id.choice5);
-                bt= (Button)      findViewById(R.id.button);
-                bt .setOnClickListener(new View.OnClickListener() {
+                bt_confirm= (Button)      findViewById(R.id.button);
+                bt_confirm .setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         RadioGroup rg= (RadioGroup)  findViewById(R.id.radiogroup);
                             esmAnswer[status-1]=((RadioButton) findViewById(rg.getCheckedRadioButtonId())).getText().toString();
@@ -421,6 +446,23 @@ public class MainActivity extends Activity {
 
                         rg.clearCheck();
                         updateESM();
+                    }
+                });
+                bt_skip= (Button)      findViewById(R.id.skip);
+                bt_skip .setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        if (esmIsRunning) {
+                            for (int j = status; j <= 6; j++) {
+                                esmAnswer[j - 1] = "NoAnswer";
+                            }
+                            status = 6;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateESM();
+                                }
+                            });
+                        }
                     }
                 });
 
@@ -435,13 +477,20 @@ public class MainActivity extends Activity {
     {
         switch (status) {
             case 1: {
+                try{
+                    content.setText(NotiQueue.peek().getNotification().extras.get(Notification.EXTRA_TITLE).toString()
+                            +"\n"+NotiQueue.peek().getNotification().extras.get(Notification.EXTRA_TEXT).toString());
+                }catch(Exception e){
+                    content.setText("");
+                }
+
                 title.setText("Choose your location type.");
                 c1.setText("Home");
                 c2.setText("Work");
                 c3.setText("University/School");
                 c4.setText("Outdoor");
                 c5.setText("Other");
-                bt.setText("Next(1/5)");
+                bt_confirm.setText("Next(1/5)");
                 status = 2;
                 break;
             }
@@ -452,7 +501,7 @@ public class MainActivity extends Activity {
                 c3.setText("With colleague");
                 c4.setText("With strangers");
                 c5.setText("Other");
-                bt.setText("Next(2/5)");
+                bt_confirm.setText("Next(2/5)");
                 status = 3;
                 break;
             }
@@ -463,7 +512,7 @@ public class MainActivity extends Activity {
                 c3.setText("Neither comfortable nor uncomfortable");
                 c4.setText("Comfortable");
                 c5.setText("Very comfortable");
-                bt.setText("Next(3/5)");
+                bt_confirm.setText("Next(3/5)");
                 status = 4;
                 break;
             }
@@ -474,7 +523,7 @@ public class MainActivity extends Activity {
                 c3.setText("Neither important nor unimportant");
                 c4.setText("Unimportant");
                 c5.setText("Very unimportant");
-                bt.setText("Next(4/5)");
+                bt_confirm.setText("Next(4/5)");
                 status = 5;
                 break;
             }
@@ -485,7 +534,7 @@ public class MainActivity extends Activity {
                 c3.setText("Neither urgent nor unurgent");
                 c4.setText("Unurgent");
                 c5.setText("Very unurgent");
-                bt.setText("Confirm");
+                bt_confirm.setText("Confirm");
                 status = 6;
                 break;
             }
