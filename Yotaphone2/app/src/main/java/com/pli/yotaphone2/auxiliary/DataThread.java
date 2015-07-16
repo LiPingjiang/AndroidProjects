@@ -5,18 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 
-import com.aware.Aware;
-import com.aware.Aware_Preferences;
-import com.aware.providers.Gravity_Provider;
-import com.aware.providers.Locations_Provider;
 import com.pli.yotaphone2.MainActivity;
-import com.pli.yotaphone2.auxiliary.Data;
 import com.pli.yotaphone2.dataApplication;
 
 import java.util.concurrent.BlockingQueue;
@@ -37,15 +31,18 @@ public class DataThread extends Thread {
 
     public void run() {
         //sleep 1 seconds for data collecting
+        //collect sensor data
+        Data data = new Data();
+        PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+        data.front_screen_on=String.valueOf(pm.isScreenOn());
         try {
-            Thread.sleep(500);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         dataApplication dataApp = (dataApplication) ((Activity) context).getApplication();
-        //collect sensor data
-        Data data = new Data();
+
 
         //通过network获取location
         String networkProvider = LocationManager.NETWORK_PROVIDER;

@@ -290,6 +290,7 @@ public class MainActivity extends Activity {
 
 
 
+
                 //Saving data to the ContentProvider
                 ContentValues new_data = new ContentValues();
                 new_data.put(Provider.NotiStudy_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
@@ -311,7 +312,8 @@ public class MainActivity extends Activity {
                 new_data.put(Provider.NotiStudy_Data.ESM_PRESURE,esmAnswer[3]);
                 new_data.put(Provider.NotiStudy_Data.ESM_IMPORTANCE,esmAnswer[4]);
                 new_data.put(Provider.NotiStudy_Data.ESM_URGENCE,esmAnswer[5]);
-                new_data.put(Provider.NotiStudy_Data.ESM_PACKAGENAME, sbn.getPackageName());
+                new_data.put(Provider.NotiStudy_Data.NOTIFICATION_PACKAGENAME, sbn.getPackageName());
+                new_data.put(Provider.NotiStudy_Data.FRONT_SCREEN_ON,data.front_screen_on );
 
                 //Insert the data to the ContentProvider
                 getContentResolver().insert(Provider.NotiStudy_Data.CONTENT_URI, new_data);

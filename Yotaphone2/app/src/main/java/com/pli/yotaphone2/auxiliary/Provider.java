@@ -61,7 +61,8 @@ public class Provider extends ContentProvider {
         tableMap.put(NotiStudy_Data.ESM_PRESURE,NotiStudy_Data.ESM_PRESURE);
         tableMap.put(NotiStudy_Data.ESM_IMPORTANCE,NotiStudy_Data.ESM_IMPORTANCE);
         tableMap.put(NotiStudy_Data.ESM_URGENCE,NotiStudy_Data.ESM_URGENCE);
-        tableMap.put(NotiStudy_Data.ESM_PACKAGENAME,NotiStudy_Data.ESM_PACKAGENAME);
+        tableMap.put(NotiStudy_Data.NOTIFICATION_PACKAGENAME,NotiStudy_Data.NOTIFICATION_PACKAGENAME);
+        tableMap.put(NotiStudy_Data.FRONT_SCREEN_ON,NotiStudy_Data.FRONT_SCREEN_ON);
 
 
         return true; //let Android know that the database is ready to be used.
@@ -203,7 +204,8 @@ public class Provider extends ContentProvider {
                     NotiStudy_Data.ESM_PRESURE + " integer default 0,"+
                     NotiStudy_Data.ESM_IMPORTANCE + " integer default 0,"+
                     NotiStudy_Data.ESM_URGENCE + " integer default 0,"+
-                    NotiStudy_Data.ESM_PACKAGENAME + " text default ''," +
+                    NotiStudy_Data.NOTIFICATION_PACKAGENAME + " text default ''," +
+                    NotiStudy_Data.FRONT_SCREEN_ON + " text default ''," +
 
                     "UNIQUE (" + NotiStudy_Data.TIMESTAMP + "," + NotiStudy_Data.DEVICE_ID + ")"
     };
@@ -267,7 +269,8 @@ public class Provider extends ContentProvider {
         public static final String ESM_PRESURE = "esm_presure";
         public static final String ESM_IMPORTANCE = "esm_importance";
         public static final String ESM_URGENCE = "esm_urgence";
-        public static final String ESM_PACKAGENAME = "packagename";
+        public static final String NOTIFICATION_PACKAGENAME = "packagename";
+        public static final String FRONT_SCREEN_ON = "front_screen_on";
 
 
 

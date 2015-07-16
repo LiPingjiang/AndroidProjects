@@ -13,4 +13,5 @@ public class Data {
     public String activity_name = new String();
     public String activity_type = new String();
     public String activity_confidence = new String();
+    public String front_screen_on="";
 }
