@@ -16,11 +16,11 @@ public class dataApplication extends Application {
     private int[] NotificationIDs;
     private String[] NotificationPackages;
     private StatusBarNotification[] statusBarNotifications;
+    private double realtime_Gravity;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
 
     }
     public ArrayList<Notification> getNotification(){
@@ -46,5 +46,11 @@ public class dataApplication extends Application {
     }
     public void updateStatusBarNotifications(StatusBarNotification[] sbns){
         this.statusBarNotifications = sbns;
+    }
+    public double getGravity(){
+        return realtime_Gravity;
+    }
+    public void setGravity(double g){
+        realtime_Gravity=g;
     }
 }

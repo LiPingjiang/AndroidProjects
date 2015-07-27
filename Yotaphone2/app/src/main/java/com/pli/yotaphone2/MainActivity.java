@@ -7,6 +7,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +15,9 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -78,6 +81,8 @@ public class MainActivity extends Activity {
     public RadioButton c5;
     public Button bt_confirm;
     public Button bt_skip;
+    public Button bt_nobother;
+    public int postponeESM;//how many esm need to be postponed
     public int status;
 
 
@@ -86,9 +91,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.d("mainactivitydebug", "create");
 
+        if(!isEnabledNotificationAccess())
+            startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+
         instance = this;
 
-
+        postponeESM=0;
         sensors  = new NotiSensor(this);
         dataApp  = (dataApplication) getApplication();
         nManger  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -405,11 +413,11 @@ public class MainActivity extends Activity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
 
-                //start a thread ,after 2 minutes, stop esm
+                //start a thread ,after 4 minutes, stop esm
                 new Thread(new Runnable() {
                     public void run() {
                         try {
-                            Thread.sleep(120000);
+                            Thread.sleep(240000);
                             if(esmIsRunning){
                                 for(int j=status;j<=6;j++){
                                     esmAnswer[j-1]="NoAnswer";
@@ -467,6 +475,25 @@ public class MainActivity extends Activity {
                         }
                     }
                 });
+                bt_nobother = (Button) findViewById(R.id.nobother);
+                bt_nobother.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        if (esmIsRunning) {
+                            for (int j = status; j <= 6; j++) {
+                                esmAnswer[j - 1] = "NoAnswer";
+                            }
+                            status = 6;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateESM();
+                                }
+                            });
+                        }
+                        postponeESM = 15;
+
+                    }
+                });
 
                 status=1;
                 updateESM();
@@ -474,9 +501,39 @@ public class MainActivity extends Activity {
             }
         }
     }
-
+    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private boolean isEnabledNotificationAccess() {
+        String pkgName = getPackageName();
+        final String flat = Settings.Secure.getString(getContentResolver(),
+                ENABLED_NOTIFICATION_LISTENERS);
+        if (!TextUtils.isEmpty(flat)) {
+            final String[] names = flat.split(":");
+            for (int i = 0; i < names.length; i++) {
+                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+                if (cn != null) {
+                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     private void updateESM()
     {
+        if(postponeESM>0){
+            esmAnswer[1]="ESM postpone";
+            esmAnswer[2]="ESM postpone";
+            esmAnswer[3]="ESM postpone";
+            esmAnswer[4]="ESM postpone";
+            esmAnswer[5]="ESM postpone";
+
+            postponeESM--;
+
+//                if(status!=1)
+            status=6;
+
+        }
         switch (status) {
             case 1: {
                 try{

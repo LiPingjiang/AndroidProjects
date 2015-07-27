@@ -22,6 +22,8 @@
             android:id="@+id/content"
             android:layout_alignParentEnd="false"
             android:layout_alignParentStart="true"
+            android:layout_alignParentRight="false"
+            android:layout_alignParentLeft="false"
             android:layout_marginTop="5dp" />
 
         <TextView
@@ -60,6 +62,7 @@
             android:layout_gravity="center"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
             android:layout_marginTop="10dp" />
 
         <RadioGroup
@@ -76,7 +79,9 @@
                 android:id="@+id/choice1"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="124dp" />
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="124dp"
+                android:layout_marginRight="124dp"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -85,7 +90,9 @@
                 android:id="@+id/choice2"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="124dp" />
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="124dp"
+                android:layout_marginRight="124dp" />
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -94,7 +101,9 @@
                 android:id="@+id/choice3"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="124dp" />
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="124dp"
+                android:layout_marginRight="124dp" />
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -103,7 +112,9 @@
                 android:id="@+id/choice4"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="124dp" />
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="124dp"
+                android:layout_marginRight="124dp" />
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -112,7 +123,9 @@
                 android:id="@+id/choice5"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="124dp" />
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="124dp"
+                android:layout_marginRight="124dp" />
 
         </RadioGroup>
 
