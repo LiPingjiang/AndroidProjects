@@ -30,11 +30,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aware.Applications;
-import com.aware.Aware;
-import com.aware.Aware_Preferences;
-import com.aware.ESM;
-import com.aware.Locations;
+
 import com.pli.yotaphone2.auxiliary.Data;
 import com.pli.yotaphone2.auxiliary.DataThread;
 import com.pli.yotaphone2.auxiliary.ListViewAdapter;
@@ -103,11 +99,8 @@ public class MainActivity extends Activity {
         NotiQueue= new LinkedList<StatusBarNotification>();
         //initial broadcast receiver
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Locations.ACTION_AWARE_LOCATIONS);
-        intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_FOREGROUND);
+        //intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_FOREGROUND);
         //intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_NOTIFICATIONS);
-        intentFilter.addAction(ESM.ACTION_AWARE_ESM_QUEUE_STARTED);
-        intentFilter.addAction(ESM.ACTION_AWARE_ESM_QUEUE_COMPLETE);
         intentFilter.addAction(ACTION_NOTISTUDY_POSTNOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_REMOVENOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_ESM_START);
@@ -119,13 +112,12 @@ public class MainActivity extends Activity {
 
         //initial Aware
 //        Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
-        Aware.setSetting(this, Aware_Preferences.STATUS_APPLICATIONS, true);
-        Aware.setSetting(this, Aware_Preferences.STATUS_NOTIFICATIONS, true);
-        Aware.setSetting(this, Aware_Preferences.STATUS_GRAVITY, false);
-        Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
+//        Aware.setSetting(this, Aware_Preferences.STATUS_APPLICATIONS, true);
+//        Aware.setSetting(this, Aware_Preferences.STATUS_NOTIFICATIONS, true);
+        //Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
         //Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
 
-        sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH)); //Ask AWARE to activate sensors
+        //sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH)); //Ask AWARE to activate sensors
 
         changeUI("main");
 
@@ -184,8 +176,8 @@ public class MainActivity extends Activity {
         Log.v("mainactivitydebug", "onDestory");
 
 
-        Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
-        sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
+        //Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
+        //sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
 
         unregisterReceiver(mBroadcastReceiver);
         Intent bsIntent = new Intent(this, MyBSActivity.class);
@@ -301,7 +293,7 @@ public class MainActivity extends Activity {
 
                 //Saving data to the ContentProvider
                 ContentValues new_data = new ContentValues();
-                new_data.put(Provider.NotiStudy_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
+                new_data.put(Provider.NotiStudy_Data.DEVICE_ID, Settings.Secure.getString(context.getContentResolver(),Settings.Secure.ANDROID_ID));
                 new_data.put(Provider.NotiStudy_Data.TIMESTAMP, System.currentTimeMillis());
                 new_data.put(Provider.NotiStudy_Data.GRAVITY,data.gravity);
                 new_data.put(Provider.NotiStudy_Data.ACTIVITY_NAME,data.activity_name);
