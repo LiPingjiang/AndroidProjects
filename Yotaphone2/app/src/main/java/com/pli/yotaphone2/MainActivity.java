@@ -99,8 +99,6 @@ public class MainActivity extends Activity {
         NotiQueue= new LinkedList<StatusBarNotification>();
         //initial broadcast receiver
         IntentFilter intentFilter = new IntentFilter();
-        //intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_FOREGROUND);
-        //intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_NOTIFICATIONS);
         intentFilter.addAction(ACTION_NOTISTUDY_POSTNOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_REMOVENOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_ESM_START);
@@ -109,15 +107,6 @@ public class MainActivity extends Activity {
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(mBroadcastReceiver, intentFilter);
-
-        //initial Aware
-//        Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
-//        Aware.setSetting(this, Aware_Preferences.STATUS_APPLICATIONS, true);
-//        Aware.setSetting(this, Aware_Preferences.STATUS_NOTIFICATIONS, true);
-        //Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
-        //Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
-
-        //sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH)); //Ask AWARE to activate sensors
 
         changeUI("main");
 
@@ -175,10 +164,6 @@ public class MainActivity extends Activity {
         super.onDestroy();
         Log.v("mainactivitydebug", "onDestory");
 
-
-        //Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
-        //sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
-
         unregisterReceiver(mBroadcastReceiver);
         Intent bsIntent = new Intent(this, MyBSActivity.class);
         this.stopService(bsIntent);
@@ -219,9 +204,7 @@ public class MainActivity extends Activity {
         });
 
         Intent i = new Intent(ACTION_REFRESH_NOTIFICATION);
-//        i.putExtra("listNotification", (Parcelable) listNotification.clone());
         sendBroadcast(i);
-        //Log.d("bsdebug", "send from mainactivity");
     }
 
 

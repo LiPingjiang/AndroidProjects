@@ -32,14 +32,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aware.Applications;
-import com.aware.Aware;
-import com.aware.Aware_Preferences;
-import com.aware.ESM;
-import com.aware.Locations;
-import com.aware.providers.Applications_Provider;
-import com.aware.providers.ESM_Provider;
-import com.aware.providers.Locations_Provider;
+
+
 import com.pingjiangli.notistudys.auxiliary.Data;
 import com.pingjiangli.notistudys.auxiliary.DataThread;
 import com.pingjiangli.notistudys.auxiliary.ListViewAdapter;
@@ -112,11 +106,8 @@ public class MainActivity extends Activity {
         NotiQueue= new LinkedList<StatusBarNotification>();
         //initial broadcast receiver
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Locations.ACTION_AWARE_LOCATIONS);
-        intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_FOREGROUND);
-        //intentFilter.addAction(Applications.ACTION_AWARE_APPLICATIONS_NOTIFICATIONS);
-        intentFilter.addAction(ESM.ACTION_AWARE_ESM_QUEUE_STARTED);
-        intentFilter.addAction(ESM.ACTION_AWARE_ESM_QUEUE_COMPLETE);
+
+
         intentFilter.addAction(ACTION_NOTISTUDY_POSTNOTIFICATION);
         intentFilter.addAction(ACTION_NOTISTUDY_REMOVENOTIFICATION);
         intentFilter.addAction(ACTION_CHECK_ESM);
@@ -126,14 +117,6 @@ public class MainActivity extends Activity {
         intentFilter.addAction(ACTION_NOTISTUDY_ESM_COMPLETE);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
-        //initial Aware
-        Aware.setSetting(this, Aware_Preferences.STATUS_APPLICATIONS, true);
-        Aware.setSetting(this, Aware_Preferences.STATUS_NOTIFICATIONS, true);
-        Aware.setSetting(this, Aware_Preferences.STATUS_GRAVITY, false);
-        Aware.startPlugin(this, "com.aware.plugin.google.activity_recognition");
-//        Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
-
-        sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH)); //Ask AWARE to activate sensors
 
         changeUI("main");
 
@@ -175,10 +158,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver);
-        Aware.stopPlugin(this, "com.aware.plugin.google.activity_recognition");
-        sendBroadcast(new Intent(Aware.ACTION_AWARE_REFRESH));
-
-    }
+            }
 
     public void refreshListView(){
         getListNotifications();
@@ -190,33 +170,12 @@ public class MainActivity extends Activity {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-
-                //Log.d("onclickinMAIN","click! " + position);
-                /*Notification n = ((dataApplication) getApplication()).getNotification().get(position);
-                NLService.currentNlservice.cancelNotification(((dataApplication) getApplication()).getStatusBarNotifications()[position].getKey());
-
-                if (n.contentIntent != null) {
-
-                    nManger.cancel(((dataApplication) getApplication()).getNotificationIDs()[position]);
-                    try {
-                        n.contentIntent.send();
-                        Log.d("onclickinMAIN", "send!");
-
-                    } catch (PendingIntent.CanceledException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, "Untouchable notification, try to delete it.", Toast.LENGTH_SHORT).show();
-                }*/
-
             }
         });
 
         Intent i = new Intent(ACTION_REFRESH_NOTIFICATION);
-//        i.putExtra("listNotification", (Parcelable) listNotification.clone());
         sendBroadcast(i);
-        //Log.d("bsdebug", "send from mainactivity");
+
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -260,9 +219,7 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             Log.d("NOTIFYSTUDY", "Received: " + intent.getAction());
 
-            if(intent.getAction().equals(Applications.ACTION_AWARE_APPLICATIONS_NOTIFICATIONS)) {
 
-            }
             if( intent.getAction().equals(ACTION_NOTISTUDY_ESM_START) ) {
                 Log.d("NLService", "ACTION_ESM_QUEUE_STARTED");
                 esmIsRunning=true;
@@ -286,7 +243,7 @@ public class MainActivity extends Activity {
 
                 //Saving data to the ContentProvider
                 ContentValues new_data = new ContentValues();
-                new_data.put(Provider.NotiStudy_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
+                new_data.put(Provider.NotiStudy_Data.DEVICE_ID, Settings.Secure.getString(context.getContentResolver(),Settings.Secure.ANDROID_ID));
                 new_data.put(Provider.NotiStudy_Data.TIMESTAMP, System.currentTimeMillis());
                 new_data.put(Provider.NotiStudy_Data.GRAVITY,data.gravity);
                 new_data.put(Provider.NotiStudy_Data.ACTIVITY_NAME,data.activity_name);
@@ -432,7 +389,7 @@ public class MainActivity extends Activity {
                 new Thread(new Runnable() {
                     public void run() {
                         try {
-                            Thread.sleep(120000);
+                            Thread.sleep(240000);
                             if (esmIsRunning) {
                                 for (int j = status; j <= 6; j++) {
                                     esmAnswer[j - 1] = "NoAnswer";
