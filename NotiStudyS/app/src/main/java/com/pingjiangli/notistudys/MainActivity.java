@@ -5,12 +5,15 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -21,14 +24,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
 
 
 import com.pingjiangli.notistudys.auxiliary.Data;
+import com.pingjiangli.notistudys.auxiliary.DataThread;
 import com.pingjiangli.notistudys.auxiliary.ListViewAdapter;
 import com.pingjiangli.notistudys.auxiliary.NotiSensor;
 import com.pingjiangli.notistudys.auxiliary.Provider;
@@ -55,6 +62,10 @@ public class MainActivity extends Activity {
     private ArrayList<Notification> listNotification= new ArrayList<>() ;
     private dataApplication dataApp;
     private NotificationManager nManger;
+    private int[] NotificationIDs;
+    private String[] NotificationPackages;
+    private StatusBarNotification[] statusBarNotifications;
+    public static MainActivity instance;
     private Queue<StatusBarNotification> NotiQueue;
     private Boolean esmIsRunning=false;
 
@@ -72,6 +83,7 @@ public class MainActivity extends Activity {
     public Button bt_confirm;
     public Button bt_skip;
     public Button bt_nobother;
+    public int postponeESM;//how many esm need to be postponed
     public int status;
 
 
@@ -85,7 +97,8 @@ public class MainActivity extends Activity {
 
         Log.d("mainactivitydebug", "create");
         //initial reference
-
+        postponeESM =0;
+        instance = this;
         sensors  = new NotiSensor(this);
         listView = (ListView)findViewById(R.id.list_notifications);
         dataApp  = (dataApplication) getApplication();
@@ -148,14 +161,6 @@ public class MainActivity extends Activity {
             }
 
     public void refreshListView(){
-        dataApp.updateNotification(getListNotifications());
-        listViewAdapter = new ListViewAdapter(this,listNotification); //create adapter
-        listView.setAdapter(listViewAdapter);
-        Intent i = new Intent(ACTION_REFRESH_NOTIFICATION);
-//        i.putExtra("listNotification", (Parcelable) listNotification.clone());
-        sendBroadcast(i);
-        Log.d("bsdebug", "send from mainactivity");
-        /*
         getListNotifications();
 
         listViewAdapter = new ListViewAdapter(this,dataApp,false); //create adapter
@@ -169,29 +174,13 @@ public class MainActivity extends Activity {
         });
 
         Intent i = new Intent(ACTION_REFRESH_NOTIFICATION);
-        sendBroadcast(i);*/
+        sendBroadcast(i);
 
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private ArrayList<Notification> getListNotifications() {
-
-        if(NLService.currentNlservice==null || NLService.currentNlservice.getActiveNotifications() == null)
-            return listNotification;
-        listNotification.clear();
-
-        int i=0;
-        for (StatusBarNotification sbn : NLService.currentNlservice.getActiveNotifications()) {
-            if(sbn.getNotification()!=null) {
-                listNotification.add(i, sbn.getNotification());
-                i++;
-            }
-        }
-        return listNotification;
-    /*private boolean getListNotifications() {
-
+    private boolean getListNotifications() {
         Log.d("getListNotifications", "getlistNotification");
-
 
         if(NLService.currentNlservice==null || NLService.currentNlservice.getActiveNotifications() == null) {
             Log.d("getListNotifications", "return");
@@ -221,7 +210,6 @@ public class MainActivity extends Activity {
 
         Log.d("getListNotifications", "return true");
         return true;
-        */
 
     }
 
@@ -306,6 +294,14 @@ public class MainActivity extends Activity {
                 Log.d("NLService", "_________REMOVENOTIFICATION_________");
 
 
+                //open sensor
+                sensors.enableSensor();
+
+                //use thread to collect data
+                Thread thread = new DataThread(context,dataqueue,sensors);
+                thread.start();
+
+                NotiQueue.offer(((StatusBarNotification) intent.getExtras().get("StatusBarNotification")));
                 refreshListView();
 
 

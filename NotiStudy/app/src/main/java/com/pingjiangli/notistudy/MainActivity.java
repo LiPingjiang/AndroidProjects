@@ -330,7 +330,8 @@ public class MainActivity extends Activity{
 
                 currentNotification= ((StatusBarNotification)intent.getExtras().get("StatusBarNotification")).getNotification();
                 refreshListView();
-
+                //start esm
+                //esm(context);
             }
         }
 
