@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 'YotaDevices:YotaPhone2 Add-On L Preview:21'
-    buildToolsVersion "22.0.0"
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         applicationId "com.pli.yotaphone2"
@@ -26,7 +26,6 @@ dependencies {
     compile 'com.google.android.gms:play-services:+'
     //compile 'com.awareframework:aware-core:3.4.8'
     compile 'com.awareframework:aware-core:+@aar'
-
     // YotaPhone2 SDK library
     //provided files('libs/com.yotadevices.yotaphone2.sdk.v2.jar')
 }
